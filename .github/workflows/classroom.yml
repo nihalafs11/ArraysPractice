@@ -1,0 +1,50 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Inventory Purge Test
+      id: inventory-purge-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Inventory Purge Test
+        setup-command: "./setup.sh"
+        command: "./tests/run-purge.sh"
+        timeout: 10
+        max-score: 10
+    - name: Task Prioritizer Test
+      id: task-prioritizer-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Task Prioritizer Test
+        setup-command: "./setup.sh"
+        command: "./tests/run-prioritize.sh"
+        timeout: 10
+        max-score: 10
+    - name: Sandwich Sum Test
+      id: sandwich-sum-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Sandwich Sum Test
+        setup-command: "./setup.sh"
+        command: "./tests/run-sandwich.sh"
+        timeout: 10
+        max-score: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        INVENTORY-PURGE-TEST_RESULTS: "${{steps.inventory-purge-test.outputs.result}}"
+        TASK-PRIORITIZER-TEST_RESULTS: "${{steps.task-prioritizer-test.outputs.result}}"
+        SANDWICH-SUM-TEST_RESULTS: "${{steps.sandwich-sum-test.outputs.result}}"
+      with:
+        runners: inventory-purge-test,task-prioritizer-test,sandwich-sum-test
